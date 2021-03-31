@@ -77,15 +77,15 @@ class Iterator:
                         break
 
                     if index == len(self.screen.points) - 1 and self.achievable:
-                        self.achievable_mechanisms.append((self.arm.actuator1_ground, self.arm.actuator2_ground, actuator1_lims, actuator2_lims))
+                        self.achievable_mechanisms.append((self.arm.actuator1_ground, self.arm.actuator2_ground, actuator1_lims[2], actuator2_lims[2]))
+                        print("Actuator 1 ground, Actuator 2 Ground, Act1 stroke, Act2 stroke: ")
+                        print(self.arm.actuator1_ground, self.arm.actuator2_ground, actuator1_lims[2], actuator2_lims[2])
 
     def iterate_ground_positions(self):
         increment = 2
         for x_pos2 in range(sd.ground_positions_origin[0], sd.ground_positions_origin[0] + sd.ground_positions_range[0],increment):
             for y_pos2 in range(sd.ground_positions_origin[1], sd.ground_positions_origin[1] + sd.ground_positions_range[1],increment):
                 self.arm.actuator2_ground = [self.screen.origin_x + x_pos2, self.screen.origin_y - y_pos2]
-                print("Successful Mechanisms at and before that ground position: " + str(self.achievable_mechanisms))
-                print("Successful Mechanisms at and before that ground position length: " + str(len(self.achievable_mechanisms)))
                 for x_pos1 in range(sd.ground_positions_origin[0], sd.ground_positions_origin[0] + sd.ground_positions_range[0], increment):
                     for y_pos1 in range(sd.ground_positions_origin[1], sd.ground_positions_origin[1] + sd.ground_positions_range[1], increment):
                         self.arm.actuator1_ground = [self.screen.origin_x + x_pos1, self.screen.origin_y - y_pos1]

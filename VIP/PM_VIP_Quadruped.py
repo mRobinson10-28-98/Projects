@@ -2,7 +2,7 @@ import sys
 import pygame as py
 import math as m
 
-sys.path.insert(0,'C:/Users/drunk/PycharmProjects/pythonProject/Pygame Mechanism Module/Pygame-Mechanism-Module')
+sys.path.insert(0, '/Pygame Mechanism Module/Pygame-Mechanism-Module')
 
 import Variables as v
 from Point import Point

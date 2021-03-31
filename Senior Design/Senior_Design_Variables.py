@@ -20,6 +20,9 @@ actuator_limits = [[13.87, 19.87], [15.87, 23.87],
 # I just took out the stroke lengths that we definitely would never use (1-4, 23-40)
 actuator_limits = [[17.87, 27.87], [27.87, 47.87]]
 
+for lims in actuator_limits:
+    lims.append(lims[1] - lims[0])
+
 patient_weight = 200
 patient_angle = -m.pi / 2
 
