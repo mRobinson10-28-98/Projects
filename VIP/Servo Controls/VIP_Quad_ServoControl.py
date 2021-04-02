@@ -1,15 +1,17 @@
-import RPi.GPIO as GPIO
+from adafruit_servokit import ServoKit
 import time
 import math as m
 import pygame
 import csv
 
-# CSV File name to pull angle values from
-fileName = '/home/pi/Documents/Motor Control/Normal Walking Gait/03032021.csv'
-# fileName = '/home/pi/Documents/Motor Control/Standing Positions/02242021.csv'
+kit = ServoKit(channels = 16)
+kit.frequency = 50
 
-# Set GPIO Numbering
-GPIO.setmode(GPIO.BOARD)
+# CSV File name to pull angle values from
+fileName = '/home/pi/Documents/Pygame-Mechanisms-Projects-master/VIP/Normal Walking Gaits/03312021_v2.csv'
+
+# Standing Positions
+fileName = '/home/pi/Documents/Pygame-Mechanisms-Projects-master/VIP/Standing Positions/03312021.csv'
 
 # Front left 3 servos, front right 3 servos, etc
 FL = []
@@ -34,9 +36,9 @@ with open(fileName, 'r') as csv_file:
     csv_reader = csv.reader(csv_file)
 
     for line in csv_reader:
-        thighThetas.append(180 - (int(float(line[0])) - thighOffset))
-        calfThetas.append(int(float(line[1])) - calfOffset)
-        hipThetas.append(int(float(line[2])) - hipOffset)
+        thighThetas.append((int(float(line[3]))))
+        calfThetas.append(int(float(line[4])))
+        hipThetas.append(int(float(line[5])))
 
 print("Thigh: " + str(thighThetas))
 print("Calf " + str(calfThetas))
@@ -45,28 +47,27 @@ print("Hip: " + str(hipThetas))
 
 # Creating Servo Class
 class Servo:
-    def __init__(self, pin, thetas, leg):
+    def __init__(self, pin, thetas, offset, leg, inverted_angle = False):
         # Set Servo Pin to OUTPUT, Freq to 50HZ
         self.pin = pin
         self.thetas = thetas
+        self.offset = offset
         self.leg = leg
-        GPIO.setup(self.pin, GPIO.OUT)
-        self.pwmPin = GPIO.PWM(self.pin, 50)
+        self.inverted_angle = inverted_angle
         self.angle = 0
         self.index = 0
-
-        # Initilize PWM Pin
-        self.pwmPin.start(30)
+        kit.servo[self.pin].set_pulse_width_range(400, 2400)
 
         # Append Servo to Servo Lists
         self.leg.append(self)
         servos.append(self)
-        time.sleep(0.2)
-
+        
     # Convert Angle value to Duty and sets the servo angle
     def setAngle(self, angle):
-        duty = 10 * (angle / 180) + 2
-        self.pwmPin.ChangeDutyCycle(duty)
+        if self.inverted_angle:
+            kit.servo[self.pin].angle = 180 - (angle - self.offset)
+        else:
+            kit.servo[self.pin].angle = angle - self.offset
 
     # Calculates the angle the servo should be set to using linear interpolation between two adjacent angle values in theta list
     # self.index is the index the servo should be referencing from theta list
@@ -96,25 +97,16 @@ def deJitter(delay):
     time.sleep(delay)
 
     for servo in servos:
-        servo.pwmPin.ChangeDutyCycle(0)
-
+        pass
+        
     time.sleep(delay * 2)
 
 
 # Calculates anlgle values for each servo and adjusts them using setAngle method
 def iterateServos(speed):
-    for servo in FL:
+    for servo in servos:
         servo.calculateAngle(speed)
         servo.setAngle(servo.angle)
-    for servo in RL:
-        servo.calculateAngle(speed)
-        servo.setAngle(servo.angle)
-    for servo in FR:
-        servo.calculateAngle(speed)
-        servo.setAngle(180 - servo.angle)
-    for servo in RR:
-        servo.calculateAngle(speed)
-        servo.setAngle(180 - servo.angle)
 
     deJitter(0.01)
 
@@ -181,27 +173,28 @@ def uniform():
 
 
 # Set Up Servo
-servoFLH = Servo(18, hipThetas, FL)
-servoFLT = Servo(15, thighThetas, FL)
-servoFLC = Servo(13, calfThetas, FL)
+servoFLH = Servo(0, hipThetas, hipOffset, FL)
+servoFLT = Servo(1, thighThetas, thighOffset + 10, FL, True)
+servoFLC = Servo(2, calfThetas, calfOffset - 10, FL)
 
-servoFRH = Servo(3, hipThetas, FR)
-servoFRT = Servo(5, thighThetas, FR)
-servoFRC = Servo(7, calfThetas, FR)
+servoRLH = Servo(4, hipThetas, hipOffset - 15, RL)
+servoRLT = Servo(5, thighThetas, thighOffset + 7, RL, True)
+servoRLC = Servo(6, calfThetas, calfOffset - 10, RL)
 
-servoRLH = Servo(10, hipThetas, RL)
-servoRLT = Servo(16, thighThetas, RL)
-servoRLC = Servo(8, calfThetas, RL)
+servoFRH = Servo(8, hipThetas, hipOffset + 10, FR, True)
+servoFRT = Servo(9, thighThetas, thighOffset - 7, FR)
+servoFRC = Servo(10, calfThetas, calfOffset, FR, True)
 
-servoRRH = Servo(19, hipThetas, RR)
-servoRRT = Servo(21, thighThetas, RR)
-servoRRC = Servo(23, calfThetas, RR)
+servoRRH = Servo(12, hipThetas, hipOffset + 10, RR, True)
+servoRRT = Servo(13, thighThetas, thighOffset - 5, RR)
+servoRRC = Servo(14, calfThetas, calfOffset, RR, True)
 
-saunter()
+trot()
+speed = 1
 while True:
     startTime = time.time()
 
-    iterateServos(0.2)
+    iterateServos(speed)
 
     currentTime = time.time()
     # print(currentTime - startTime)
@@ -215,3 +208,5 @@ GPIO.cleanup()
 
 
 
+ 
+ 

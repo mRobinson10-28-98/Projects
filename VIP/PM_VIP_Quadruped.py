@@ -2,7 +2,7 @@ import sys
 import pygame as py
 import math as m
 
-sys.path.insert(0, '/Pygame Mechanism Module/Pygame-Mechanism-Module')
+sys.path.insert(0, '/home/pi/Documents/Pygame-Mechanism-Package-master')
 
 import Variables as v
 from Point import Point
@@ -13,14 +13,19 @@ from Screen import Screen
 from Button import Button
 from Mouse import Mouse
 
-'''
-fileWriteName = '/home/pi/Documents/Motor Control/Normal Walking Gait/03032021.csv'
-fileReadName = '/home/pi/Documents/Motor Control/Normal Walking Gait/03032021.csv'
-'''
 
+walkingDir = '/home/pi/Documents/Pygame-Mechanisms-Projects-master/VIP/Normal Walking Gaits/03312021.csv'
+walkingDir2 = '/home/pi/Documents/Pygame-Mechanisms-Projects-master/VIP/Normal Walking Gaits/03312021_v2.csv'
+walkingDir3 = '/home/pi/Documents/Pygame-Mechanisms-Projects-master/VIP/Normal Walking Gaits/03312021_v3.csv'
+
+standingDir = '/home/pi/Documents/Pygame-Mechanisms-Projects-master/VIP/Standing Positions/03312021.csv'
+
+fileWriteName = walkingDir3
+fileReadName = walkingDir2
+'''
 fileWriteName = 'C:/Users/drunk/PycharmProjects/pythonProject/Pygame Mechanism Module/Pygame Mechanisms Projects/Csv Files/Walking Gaits/03132021.csv'
 fileReadName = 'C:/Users/drunk/PycharmProjects/pythonProject/Pygame Mechanism Module/Pygame Mechanisms Projects/Csv Files/Walking Gaits/03132021.csv'
-
+'''
 screen_dim_pix = 800
 screen_dim_inch = 24
 
