@@ -13,7 +13,6 @@ from CsvWriter import CsvWriter
 from CsvReader import CsvReader
 from Two_Bar_Planar_Linear_Actuator_Arm import Arm
 from Screen import Screen
-from Button import Button
 from Mouse import Mouse
 
 '''
@@ -38,7 +37,7 @@ arm1 = Arm(screen, sd.linkLength1, sd.linkLength2, sd.actuator1_ground,
 csvWriter = CsvWriter(screen, fileWriteName, arm1)
 csvReader = CsvReader(screen, fileReadName)
 
-mouse = Mouse(screen, 0, 0)
+mouse = Mouse(screen)
 
 Point(screen, screen.inches_to_pixels(screen.origin_x + sd.linkLength1), screen.inches_to_pixels(screen.origin_y), 0, screen.points)
 
@@ -47,7 +46,6 @@ iterator = Iterator(screen, arm1)
 csvWriterIterator = CsvWriter(screen, fileWriteNameIterator, iterator)
 
 run = True
-test = False
 while run:
     screen.initialize()
 
@@ -62,16 +60,12 @@ while run:
     if iterate:
         iterator.iterate_ground_positions()
 
-        sd.work_space_origin = [12, -18]
+        sd.work_space_origin = [26, -18]
+        sd.ground_positions_origin = [-28, sd.work_space_origin[1] - sd.work_space[1]]
+        iterator.iterate_ground_positions()
+
+        sd.work_space_origin = [24, -18]
         sd.ground_positions_origin = [-30, sd.work_space_origin[1] - sd.work_space[1]]
-        iterator.iterate_ground_positions()
-
-        sd.work_space_origin = [6, -18]
-        sd.ground_positions_origin = [-36, sd.work_space_origin[1] - sd.work_space[1]]
-        iterator.iterate_ground_positions()
-
-        sd.work_space_origin = [0, -18]
-        sd.ground_positions_origin = [-42, sd.work_space_origin[1] - sd.work_space[1]]
         iterator.iterate_ground_positions()
         break
 

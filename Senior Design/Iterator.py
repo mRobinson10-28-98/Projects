@@ -39,6 +39,9 @@ class Iterator:
         self.achievable_mechanisms = []
         self.achievable = True
 
+        self.actuator1_lims = 0
+        self.actuator2_lims = 0
+
     def create_points(self):
         self.screen.points = []
         for x_pos in range(int(self.screen.inches_to_pixels(sd.work_space_origin[0] + self.screen.origin_x)),
@@ -50,43 +53,49 @@ class Iterator:
                 Point(self.screen, x_pos, y_pos, 0, self.screen.points)
 
     def iterate_points(self):
-        for limits1 in sd.actuator_limits:
-            actuator1_lims = limits1
-            for limits2 in sd.actuator_limits:
-                actuator2_lims = limits2
-                self.achievable = True
-                self.create_points()
-                for index in range(len(self.screen.points)):
-                    self.screen.point_index = index
-                    self.screen.initialize()
-                    self.arm.create()
-                    self.arm.kinetics(sd.patient_weight, sd.patient_angle)
-                    self.screen.draw([[self.arm]])
-                    if actuator1_lims[0] <= self.arm.actuator1_length <= actuator1_lims[1] and abs(self.arm.actuator1_force) <= 800:
-                        if actuator2_lims[0] <= self.arm.actuator2_length <= actuator2_lims[1] and abs(self.arm.actuator2_force) <= 800:
-                            if self.screen.origin_y - self.arm.actuator2_joint[1] >= sd.work_space_origin[1] - sd.work_space[1] - 10:
-                                self.screen.current_point.color = v.green
-                            else:
-                                self.achievable = False
-                                break
-                        else:
-                            self.achievable = False
-                            break
+        for index in range(len(self.screen.points)):
+            self.screen.point_index = index
+            self.screen.initialize()
+            self.arm.create()
+            self.arm.kinetics(sd.patient_weight, sd.patient_angle)
+            self.screen.draw([[self.arm]])
+            if self.actuator1_lims[0] <= self.arm.actuator1_length <= self.actuator1_lims[1] and abs(self.arm.actuator1_force) <= 800:
+                if self.actuator2_lims[0] <= self.arm.actuator2_length <= self.actuator2_lims[1] and abs(self.arm.actuator2_force) <= 800:
+                    if self.screen.origin_y - self.arm.actuator2_joint[1] >= sd.work_space_origin[1] - sd.work_space[1] - 10:
+                        self.screen.current_point.color = v.green
                     else:
                         self.achievable = False
                         break
+                else:
+                    self.achievable = False
+                    break
+            else:
+                self.achievable = False
+                break
 
-                    if index == len(self.screen.points) - 1 and self.achievable:
-                        self.achievable_mechanisms.append((self.arm.actuator1_ground, self.arm.actuator2_ground, actuator1_lims[2], actuator2_lims[2]))
-                        print("Actuator 1 ground, Actuator 2 Ground, Act1 stroke, Act2 stroke: ")
-                        print(self.arm.actuator1_ground, self.arm.actuator2_ground, actuator1_lims[2], actuator2_lims[2])
+            if index == len(self.screen.points) - 1 and self.achievable:
+                self.achievable_mechanisms.append((self.arm.actuator1_ground, self.arm.actuator2_ground, self.actuator1_lims[2], self.actuator2_lims[2]))
+                print("Actuator 1 ground, Actuator 2 Ground, Act1 stroke, Act2 stroke: ")
+                print(self.arm.actuator1_ground, self.arm.actuator2_ground, self.actuator1_lims[2], self.actuator2_lims[2])
+
+    def iterate_limits(self):
+        for limits1 in sd.actuator_limits:
+            self.actuator1_lims = limits1
+            for limits2 in sd.actuator_limits:
+                self.actuator2_lims = limits2
+                self.achievable = True
+                self.iterate_points()
 
     def iterate_ground_positions(self):
         increment = 2
+        self.create_points()
         for x_pos2 in range(sd.ground_positions_origin[0], sd.ground_positions_origin[0] + sd.ground_positions_range[0],increment):
             for y_pos2 in range(sd.ground_positions_origin[1], sd.ground_positions_origin[1] + sd.ground_positions_range[1],increment):
                 self.arm.actuator2_ground = [self.screen.origin_x + x_pos2, self.screen.origin_y - y_pos2]
                 for x_pos1 in range(sd.ground_positions_origin[0], sd.ground_positions_origin[0] + sd.ground_positions_range[0], increment):
                     for y_pos1 in range(sd.ground_positions_origin[1], sd.ground_positions_origin[1] + sd.ground_positions_range[1], increment):
                         self.arm.actuator1_ground = [self.screen.origin_x + x_pos1, self.screen.origin_y - y_pos1]
-                        self.iterate_points()
+                        self.iterate_limits()
+
+    def return_for_csv(self):
+        return [self.arm.actuator1_ground, self.arm.actuator2_ground, self.actuator1_lims[2], self.actuator2_lims[2]]
